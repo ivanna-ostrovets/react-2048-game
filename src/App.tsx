@@ -1,26 +1,38 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState } from 'react';
+
+import Cell from './Cell/Cell';
 import './App.css';
 
+export type CellType = number | undefined;
+
+type Board = [
+  [CellType, CellType, CellType, CellType],
+  [CellType, CellType, CellType, CellType],
+  [CellType, CellType, CellType, CellType],
+  [CellType, CellType, CellType, CellType],
+];
+
+const INITIAL_BOARD_STATE: Board = [
+  [undefined, undefined, undefined, undefined],
+  [undefined, undefined, undefined, undefined],
+  [undefined, undefined, undefined, undefined],
+  [undefined, undefined, undefined, undefined],
+];
+
 const App: React.FC = () => {
+  const [board, setBoard] = useState(INITIAL_BOARD_STATE);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <div className="board">
+        {board.map((row, rowIndex) =>
+          row.map((cell, cellIndex) => (
+            <Cell key={`cell-${rowIndex}-${cellIndex}`} cell={cell} />
+          )),
+        )}
+      </div>
     </div>
   );
-}
+};
 
 export default App;
