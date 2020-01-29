@@ -19,44 +19,60 @@ const INITIAL_BOARD = getInitialBoard();
 
 const App: React.FC = () => {
   const [board, setBoard] = useState(INITIAL_BOARD);
+  const [isGameOver, setGameOver] = useState(false);
 
   const startNewGame = () => setBoard(getInitialBoard());
 
-  function handleKeyDown({ key }: KeyboardEvent) {
-    switch (key) {
-      case 'ArrowUp': {
-        setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
-        break;
-      }
-      case 'ArrowDown': {
-        setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
-        break;
-      }
-      case 'ArrowLeft': {
-        setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
-        break;
-      }
-      case 'ArrowRight': {
-        setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-  }
-
   useEffect(() => {
+    if (isGameOver) return;
+
+    const handleKeyDown = ({ key }: KeyboardEvent) => {
+      switch (key) {
+        case 'ArrowUp': {
+          setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
+          break;
+        }
+        case 'ArrowDown': {
+          setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
+          break;
+        }
+        case 'ArrowLeft': {
+          setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
+          break;
+        }
+        case 'ArrowRight': {
+          setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [isGameOver]);
+
+  useEffect(() => {
+    let isFreeCell = false;
+
+    board.forEach(row =>
+      row.forEach(cell => {
+        if (cell === undefined) isFreeCell = true;
+        return;
+      }),
+    );
+
+    setGameOver(!isFreeCell);
+  }, [board]);
 
   return (
     <div className="app">
-      <button onClick={startNewGame} className="new-game-button">
+      <button onClick={startNewGame} className="button new-game-button">
         New Game
       </button>
 
@@ -65,6 +81,16 @@ const App: React.FC = () => {
           row.map((cell, cellIndex) => (
             <Cell key={`cell-${rowIndex}-${cellIndex}`} cell={cell} />
           )),
+        )}
+
+        {isGameOver && (
+          <div className="game-over-overlay">
+            <span className="game-over-text">Game Over!</span>
+
+            <button onClick={startNewGame} className="button try-again-button">
+              Try Again
+            </button>
+          </div>
         )}
       </div>
     </div>
