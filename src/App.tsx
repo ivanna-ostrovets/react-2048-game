@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import './App.css';
 import Cell from './Cell/Cell';
@@ -15,10 +15,44 @@ const INITIAL_BOARD_STATE: Board = [
 const getInitialBoard = () =>
   generateBoardWithNewCell(generateBoardWithNewCell(INITIAL_BOARD_STATE));
 
+const INITIAL_BOARD = getInitialBoard();
+
 const App: React.FC = () => {
-  const [board, setBoard] = useState(getInitialBoard());
+  const [board, setBoard] = useState(INITIAL_BOARD);
 
   const startNewGame = () => setBoard(getInitialBoard());
+
+  function handleKeyDown({ key }: KeyboardEvent) {
+    switch (key) {
+      case 'ArrowUp': {
+        setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
+        break;
+      }
+      case 'ArrowDown': {
+        setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
+        break;
+      }
+      case 'ArrowLeft': {
+        setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
+        break;
+      }
+      case 'ArrowRight': {
+        setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  }
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <div className="app">
