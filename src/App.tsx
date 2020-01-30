@@ -1,3 +1,4 @@
+import isEqual from 'lodash/isEqual';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
@@ -62,10 +63,12 @@ const App: React.FC = () => {
             const transposedBoard = transposeBoard(prevBoard);
             const boardAfterMove = transposedBoard.map(makeMoveOnSequence);
 
-            return transposeBoard(boardAfterMove) as Board;
-          });
+            if (isEqual(transposedBoard, boardAfterMove)) return prevBoard;
 
-          setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
+            return generateBoardWithNewCell(
+              transposeBoard(boardAfterMove) as Board,
+            );
+          });
 
           break;
         }
@@ -78,15 +81,24 @@ const App: React.FC = () => {
                 .reverse(),
             );
 
-            return transposeBoard(boardAfterMove) as Board;
+            if (isEqual(prevBoard, boardAfterMove)) return prevBoard;
+
+            return generateBoardWithNewCell(
+              transposeBoard(boardAfterMove) as Board,
+            );
           });
 
-          setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
           break;
         }
         case 'ArrowLeft': {
-          setBoard(prevBoard => prevBoard.map(makeMoveOnSequence) as Board);
-          setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
+          setBoard(prevBoard => {
+            const boardAfterMove = prevBoard.map(makeMoveOnSequence) as Board;
+
+            if (isEqual(prevBoard, boardAfterMove)) return prevBoard;
+
+            return generateBoardWithNewCell(boardAfterMove);
+          });
+
           break;
         }
         case 'ArrowRight': {
@@ -97,10 +109,11 @@ const App: React.FC = () => {
                 .reverse(),
             );
 
-            return boardAfterMove as Board;
+            if (isEqual(prevBoard, boardAfterMove)) return prevBoard;
+
+            return generateBoardWithNewCell(boardAfterMove as Board);
           });
 
-          setBoard(prevBoard => generateBoardWithNewCell(prevBoard));
           break;
         }
         default: {
