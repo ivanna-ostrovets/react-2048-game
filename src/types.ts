@@ -1,11 +1,11 @@
-export type CellType = {
+export type Cell = {
   value: number | undefined;
   key: string;
 };
 
 export type Board = [
-  [CellType, CellType, CellType, CellType],
-  [CellType, CellType, CellType, CellType],
-  [CellType, CellType, CellType, CellType],
-  [CellType, CellType, CellType, CellType],
+  [Cell, Cell, Cell, Cell],
+  [Cell, Cell, Cell, Cell],
+  [Cell, Cell, Cell, Cell],
+  [Cell, Cell, Cell, Cell],
 ];

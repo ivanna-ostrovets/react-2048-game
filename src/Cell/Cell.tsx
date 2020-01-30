@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CellType } from '../types';
+import { Cell as CellType } from '../types';
 import './Cell.css';
 
 interface Props {

@@ -1,10 +1,9 @@
-import cloneDeep from 'lodash/cloneDeep';
-import isEqual from 'lodash/isEqual';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
 import Cell from './Cell/Cell';
 import { generateBoardWithNewCell } from './generateBoardWithNewCell';
+import { makeMove } from './moveLogic';
 import { Board } from './types';
 
 const INITIAL_BOARD_STATE: Board = [
@@ -34,43 +33,6 @@ const INITIAL_BOARD_STATE: Board = [
   ],
 ];
 
-const transposeBoard = board =>
-  board[0].map((col, i) => board.map(row => row[i]));
-
-const getNonEmptyCells = seq => seq.filter(cell => cell.value !== undefined);
-
-const getEmptyCells = seq => seq.filter(cell => cell.value === undefined);
-
-// TODO: pure func
-// TODO: types
-const sumCells = seq => {
-  seq.forEach((cell, index, array) => {
-    if (
-      cell.value === undefined ||
-      array[index + 1] === undefined ||
-      array[index + 1].value === undefined
-    ) {
-      return;
-    }
-
-    if (cell.value === array[index + 1].value) {
-      array[index].value = cell.value * 2;
-      array[index + 1].value = undefined;
-    }
-  });
-
-  return seq;
-};
-
-const makeMoveOnSequence = seq => {
-  if (seq.every(cell => cell.value === undefined)) return seq;
-
-  const emptyCells = getEmptyCells(seq);
-  const newSeq = sumCells(getNonEmptyCells(seq));
-
-  return getNonEmptyCells(newSeq).concat(getEmptyCells(newSeq), emptyCells);
-};
-
 const getInitialBoard = () =>
   generateBoardWithNewCell(generateBoardWithNewCell(INITIAL_BOARD_STATE));
 
@@ -89,58 +51,33 @@ const App: React.FC = () => {
       switch (key) {
         case 'ArrowUp': {
           setBoard(prevBoard => {
-            const transposedBoard = transposeBoard(prevBoard);
-            const boardAfterMove = cloneDeep(transposedBoard).map(
-              makeMoveOnSequence,
-            );
-
-            if (isEqual(transposedBoard, boardAfterMove)) return prevBoard;
-
-            return generateBoardWithNewCell(transposeBoard(boardAfterMove));
+            return makeMove(prevBoard, { isVerticalMove: true });
           });
 
           break;
         }
         case 'ArrowDown': {
           setBoard(prevBoard => {
-            const transposedBoard = transposeBoard(prevBoard);
-            const boardAfterMove = cloneDeep(transposedBoard).map(col =>
-              makeMoveOnSequence(col.slice().reverse())
-                .slice()
-                .reverse(),
-            );
-
-            if (isEqual(transposedBoard, boardAfterMove)) return prevBoard;
-
-            return generateBoardWithNewCell(transposeBoard(boardAfterMove));
+            return makeMove(prevBoard, {
+              isVerticalMove: true,
+              isReversedOrder: true,
+            });
           });
 
           break;
         }
         case 'ArrowLeft': {
           setBoard(prevBoard => {
-            const boardAfterMove = cloneDeep(prevBoard).map(
-              makeMoveOnSequence,
-            ) as Board;
-
-            if (isEqual(prevBoard, boardAfterMove)) return prevBoard;
-
-            return generateBoardWithNewCell(boardAfterMove);
+            return makeMove(prevBoard);
           });
 
           break;
         }
         case 'ArrowRight': {
           setBoard(prevBoard => {
-            const boardAfterMove = cloneDeep(prevBoard).map(row =>
-              makeMoveOnSequence(row.slice().reverse())
-                .slice()
-                .reverse(),
-            );
-
-            if (isEqual(prevBoard, boardAfterMove)) return prevBoard;
-
-            return generateBoardWithNewCell(boardAfterMove);
+            return makeMove(prevBoard, {
+              isReversedOrder: true,
+            });
           });
 
           break;
