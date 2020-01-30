@@ -1,3 +1,4 @@
+import cloneDeep from 'lodash/cloneDeep';
 import isEqual from 'lodash/isEqual';
 import React, { useEffect, useState } from 'react';
 
@@ -7,26 +8,54 @@ import { generateBoardWithNewCell } from './generateBoardWithNewCell';
 import { Board } from './types';
 
 const INITIAL_BOARD_STATE: Board = [
-  [undefined, undefined, undefined, undefined],
-  [undefined, undefined, undefined, undefined],
-  [undefined, undefined, undefined, undefined],
-  [undefined, undefined, undefined, undefined],
+  [
+    { value: undefined, key: 'cell-0-0' },
+    { value: undefined, key: 'cell-0-1' },
+    { value: undefined, key: 'cell-0-2' },
+    { value: undefined, key: 'cell-0-3' },
+  ],
+  [
+    { value: undefined, key: 'cell-1-0' },
+    { value: undefined, key: 'cell-1-1' },
+    { value: undefined, key: 'cell-1-2' },
+    { value: undefined, key: 'cell-1-3' },
+  ],
+  [
+    { value: undefined, key: 'cell-2-0' },
+    { value: undefined, key: 'cell-2-1' },
+    { value: undefined, key: 'cell-2-2' },
+    { value: undefined, key: 'cell-2-3' },
+  ],
+  [
+    { value: undefined, key: 'cell-3-0' },
+    { value: undefined, key: 'cell-3-1' },
+    { value: undefined, key: 'cell-3-2' },
+    { value: undefined, key: 'cell-3-3' },
+  ],
 ];
 
 const transposeBoard = board =>
   board[0].map((col, i) => board.map(row => row[i]));
 
-const getNonEmptyCells = seq => seq.filter(cell => cell !== undefined);
+const getNonEmptyCells = seq => seq.filter(cell => cell.value !== undefined);
+
+const getEmptyCells = seq => seq.filter(cell => cell.value === undefined);
 
 // TODO: pure func
 // TODO: types
 const sumCells = seq => {
   seq.forEach((cell, index, array) => {
-    if (cell === undefined || array[index + 1] === undefined) return;
+    if (
+      cell.value === undefined ||
+      array[index + 1] === undefined ||
+      array[index + 1].value === undefined
+    ) {
+      return;
+    }
 
-    if (cell === array[index + 1]) {
-      array[index] = cell * 2;
-      array[index + 1] = undefined;
+    if (cell.value === array[index + 1].value) {
+      array[index].value = cell.value * 2;
+      array[index + 1].value = undefined;
     }
   });
 
@@ -34,12 +63,12 @@ const sumCells = seq => {
 };
 
 const makeMoveOnSequence = seq => {
-  if (seq.every(cell => cell === undefined)) return seq;
+  if (seq.every(cell => cell.value === undefined)) return seq;
 
-  const newSeq = getNonEmptyCells(sumCells(getNonEmptyCells(seq)));
-  const emptyCellsQuantity = seq.length - newSeq.length;
+  const emptyCells = getEmptyCells(seq);
+  const newSeq = sumCells(getNonEmptyCells(seq));
 
-  return newSeq.concat(...Array(emptyCellsQuantity));
+  return getNonEmptyCells(newSeq).concat(getEmptyCells(newSeq), emptyCells);
 };
 
 const getInitialBoard = () =>
@@ -61,13 +90,13 @@ const App: React.FC = () => {
         case 'ArrowUp': {
           setBoard(prevBoard => {
             const transposedBoard = transposeBoard(prevBoard);
-            const boardAfterMove = transposedBoard.map(makeMoveOnSequence);
+            const boardAfterMove = cloneDeep(transposedBoard).map(
+              makeMoveOnSequence,
+            );
 
             if (isEqual(transposedBoard, boardAfterMove)) return prevBoard;
 
-            return generateBoardWithNewCell(
-              transposeBoard(boardAfterMove) as Board,
-            );
+            return generateBoardWithNewCell(transposeBoard(boardAfterMove));
           });
 
           break;
@@ -75,24 +104,24 @@ const App: React.FC = () => {
         case 'ArrowDown': {
           setBoard(prevBoard => {
             const transposedBoard = transposeBoard(prevBoard);
-            const boardAfterMove = transposedBoard.map(col =>
+            const boardAfterMove = cloneDeep(transposedBoard).map(col =>
               makeMoveOnSequence(col.slice().reverse())
                 .slice()
                 .reverse(),
             );
 
-            if (isEqual(prevBoard, boardAfterMove)) return prevBoard;
+            if (isEqual(transposedBoard, boardAfterMove)) return prevBoard;
 
-            return generateBoardWithNewCell(
-              transposeBoard(boardAfterMove) as Board,
-            );
+            return generateBoardWithNewCell(transposeBoard(boardAfterMove));
           });
 
           break;
         }
         case 'ArrowLeft': {
           setBoard(prevBoard => {
-            const boardAfterMove = prevBoard.map(makeMoveOnSequence) as Board;
+            const boardAfterMove = cloneDeep(prevBoard).map(
+              makeMoveOnSequence,
+            ) as Board;
 
             if (isEqual(prevBoard, boardAfterMove)) return prevBoard;
 
@@ -103,7 +132,7 @@ const App: React.FC = () => {
         }
         case 'ArrowRight': {
           setBoard(prevBoard => {
-            const boardAfterMove = prevBoard.map(row =>
+            const boardAfterMove = cloneDeep(prevBoard).map(row =>
               makeMoveOnSequence(row.slice().reverse())
                 .slice()
                 .reverse(),
@@ -111,7 +140,7 @@ const App: React.FC = () => {
 
             if (isEqual(prevBoard, boardAfterMove)) return prevBoard;
 
-            return generateBoardWithNewCell(boardAfterMove as Board);
+            return generateBoardWithNewCell(boardAfterMove);
           });
 
           break;
@@ -134,7 +163,7 @@ const App: React.FC = () => {
 
     board.forEach(row =>
       row.forEach(cell => {
-        if (cell === undefined) isFreeCell = true;
+        if (cell.value === undefined) isFreeCell = true;
         return;
       }),
     );
@@ -149,11 +178,7 @@ const App: React.FC = () => {
       </button>
 
       <div className="board">
-        {board.map((row, rowIndex) =>
-          row.map((cell, cellIndex) => (
-            <Cell key={`cell-${rowIndex}-${cellIndex}`} cell={cell} />
-          )),
-        )}
+        {board.map(row => row.map(cell => <Cell key={cell.key} cell={cell} />))}
 
         {isGameOver && (
           <div className="game-over-overlay">

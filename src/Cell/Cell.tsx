@@ -8,7 +8,7 @@ interface Props {
 }
 
 const Cell: React.FC<Props> = ({ cell }: Props) => {
-  return <div className="cell">{cell}</div>;
+  return <div className="cell">{cell.value}</div>;
 };
 
 export default Cell;

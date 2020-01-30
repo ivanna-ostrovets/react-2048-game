@@ -1,3 +1,4 @@
+import cloneDeep from 'lodash/cloneDeep';
 import { Board } from './types';
 
 const ROWS_QUANTITY = 4;
@@ -14,15 +15,15 @@ const getNewCellPosition = () => [
 ];
 
 export const generateBoardWithNewCell = (board: Board) => {
-  const newBoard = [...board.map(row => [...row])] as Board;
+  const newBoard = cloneDeep(board);
   const newCellNumber = getNewCellNumber();
   let rowNumber, cellNumber;
 
   do {
     [rowNumber, cellNumber] = getNewCellPosition();
-  } while (board[rowNumber][cellNumber] !== undefined);
+  } while (board[rowNumber][cellNumber].value !== undefined);
 
-  newBoard[rowNumber][cellNumber] = newCellNumber;
+  newBoard[rowNumber][cellNumber].value = newCellNumber;
 
   return newBoard;
 };
